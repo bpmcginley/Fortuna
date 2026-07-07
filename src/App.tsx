@@ -1,5 +1,6 @@
 import { StoreProvider } from './state/store'
 import { Toolbar } from './components/Toolbar'
+import { ProfileBar } from './components/ProfileBar'
 import { PlanBasics, MarketModel, WithdrawalPanel } from './components/Controls'
 import { AccountsPanel, ContribPanel, EventsPanel, ExpensePanel, IncomePanel } from './components/Collections'
 import { Results } from './components/Results'
@@ -10,6 +11,7 @@ export default function App() {
     <StoreProvider>
       <div className="app">
         <Toolbar />
+        <ProfileBar />
         <div className="layout">
           <aside className="controls">
             <Section title="Plan basics" subtitle="timeline & macro">

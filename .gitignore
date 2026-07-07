@@ -9,3 +9,8 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+# Tauri / Rust
+src-tauri/target
+src-tauri/gen/schemas
+src-tauri/fortuna-icon.png

@@ -5,6 +5,7 @@ import { runSimulation } from '../engine/simulate'
 import { PALETTE } from '../state/scenario'
 import { money, pct } from './format'
 import { FanChart, type Overlay } from './FanChart'
+import { Coach } from './Coach'
 
 export function Results() {
   const { scenario, saved } = useStore()
@@ -86,6 +87,8 @@ export function Results() {
           </div>
         </div>
       )}
+
+      <Coach />
 
       <Ledger nominal={nominal} rows={result.ledger} retireAge={scenario.retirementAge} />
     </div>
