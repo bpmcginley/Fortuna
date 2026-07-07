@@ -8,7 +8,7 @@ import { FanChart, type Overlay } from './FanChart'
 import { Coach } from './Coach'
 
 export function Results() {
-  const { scenario, saved } = useStore()
+  const { scenario, saved, deleteSaved } = useStore()
   const { result, running, ms } = useSimulation(scenario)
   const [nominal, setNominal] = useState(false)
   const [shown, setShown] = useState<Set<string>>(new Set())
@@ -82,6 +82,23 @@ export function Results() {
                 />
                 <span className="swatch" style={{ background: PALETTE[(i + 3) % PALETTE.length] }} />
                 {s.scenario.name}
+                <button
+                  type="button"
+                  className="compare-del"
+                  title={`Remove "${s.scenario.name}" from saved comparisons`}
+                  onClick={(e) => {
+                    e.preventDefault() // don't toggle the surrounding checkbox label
+                    e.stopPropagation()
+                    setShown((prev) => {
+                      const n = new Set(prev)
+                      n.delete(s.id)
+                      return n
+                    })
+                    deleteSaved(s.id)
+                  }}
+                >
+                  ✕
+                </button>
               </label>
             ))}
           </div>
