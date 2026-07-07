@@ -19,6 +19,8 @@ Then its Coach tells you, with numbers, what would improve the odds.
 > **"Windows protected your PC"?** Fortuna is a new open-source app and isn't code-signed yet, so
 > Windows SmartScreen may warn on first run. Click **More info → Run anyway**. The app is fully
 > open source — you can audit every line here, or build it yourself from this repo.
+> Fortuna has applied for free code signing through the [SignPath Foundation](https://signpath.org/)
+> for open-source projects; this notice will be replaced once signed builds are live.
 
 **Or try the [live web demo](https://bpmcginley.github.io/Fortuna/)** — same app, right in the
 browser. The desktop app is the full experience (native file dialogs, your data stays in one
