@@ -25,8 +25,14 @@ const SCHEMA = {
     spendingAnnual: { type: ['number', 'null'], description: 'Total annual spending in dollars (convert monthly figures; if only rent is given, estimate total spending and note it in assumptions)' },
     invested: { type: ['number', 'null'], description: 'Total invested assets today: 401k, IRA, brokerage, stocks' },
     cash: { type: ['number', 'null'], description: 'Cash savings / emergency fund today' },
-    risk: { type: ['string', 'null'], enum: ['conservative', 'balanced', 'aggressive', null], description: 'Investing style if expressed' },
-    outlook: { type: ['string', 'null'], enum: ['stable', 'rising', 'uncertain', null], description: 'Career/income outlook if expressed' },
+    risk: {
+      anyOf: [{ type: 'string', enum: ['conservative', 'balanced', 'aggressive'] }, { type: 'null' }],
+      description: 'Investing style if expressed',
+    },
+    outlook: {
+      anyOf: [{ type: 'string', enum: ['stable', 'rising', 'uncertain'] }, { type: 'null' }],
+      description: 'Career/income outlook if expressed',
+    },
     planHome: { type: ['boolean', 'null'], description: 'Plans to buy a home' },
     planKids: { type: ['boolean', 'null'], description: 'Plans to have children' },
     events: {
@@ -162,6 +168,7 @@ export default {
     }
 
     if (!upstream.ok) {
+      console.error('upstream error', upstream.status, await upstream.clone().text())
       // Never leak upstream error bodies (may contain account details).
       return json(request, 502, { error: `parser upstream error (${upstream.status})` })
     }
