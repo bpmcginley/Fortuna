@@ -7,27 +7,71 @@ export function Toolbar() {
   const { scenario, dispatch, saveCurrent, saved } = useStore()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const exportJson = () => {
-    const blob = new Blob([JSON.stringify(scenario, null, 2)], { type: 'application/json' })
+  // Inside the Tauri shell, WebView2 ignores <a download> blob links, so
+  // export/import go through native save/open dialogs there; the blob and
+  // <input type=file> paths remain the browser dev-mode fallback.
+  const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
+  const fileStem = () => scenario.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'fortuna'
+
+  const exportJson = async () => {
+    const json = JSON.stringify(scenario, null, 2)
+    if (isTauri) {
+      try {
+        const { save } = await import('@tauri-apps/plugin-dialog')
+        const path = await save({
+          defaultPath: `${fileStem()}.json`,
+          filters: [{ name: 'Fortuna scenario', extensions: ['json'] }],
+        })
+        if (!path) return // user cancelled
+        const { writeTextFile } = await import('@tauri-apps/plugin-fs')
+        await writeTextFile(path, json)
+      } catch (e) {
+        alert(`Could not export: ${e instanceof Error ? e.message : e}`)
+      }
+      return
+    }
+    const blob = new Blob([json], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${scenario.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'fortuna'}.json`
+    a.download = `${fileStem()}.json`
     a.click()
     URL.revokeObjectURL(url)
   }
 
-  const importJson = (file: File) => {
-    const reader = new FileReader()
-    reader.onload = () => {
+  const loadParsed = (text: string) => {
+    try {
+      const parsed = JSON.parse(text) as Scenario
+      if (!parsed.accounts || !Array.isArray(parsed.accounts)) throw new Error('not a Fortuna scenario')
+      dispatch({ type: 'load', scenario: parsed })
+    } catch (e) {
+      alert(`Could not import: ${e instanceof Error ? e.message : e}`)
+    }
+  }
+
+  const importClick = async () => {
+    if (isTauri) {
       try {
-        const parsed = JSON.parse(String(reader.result)) as Scenario
-        if (!parsed.accounts || !Array.isArray(parsed.accounts)) throw new Error('not a Fortuna scenario')
-        dispatch({ type: 'load', scenario: parsed })
+        const { open } = await import('@tauri-apps/plugin-dialog')
+        const path = await open({
+          multiple: false,
+          directory: false,
+          filters: [{ name: 'Fortuna scenario', extensions: ['json'] }],
+        })
+        if (typeof path !== 'string') return // cancelled
+        const { readTextFile } = await import('@tauri-apps/plugin-fs')
+        loadParsed(await readTextFile(path))
       } catch (e) {
         alert(`Could not import: ${e instanceof Error ? e.message : e}`)
       }
+      return
     }
+    fileRef.current?.click()
+  }
+
+  const importJson = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = () => loadParsed(String(reader.result))
     reader.readAsText(file)
   }
 
@@ -55,7 +99,7 @@ export function Toolbar() {
           ★ Save to compare{saved.length ? ` (${saved.length})` : ''}
         </button>
         <button onClick={exportJson}>Export</button>
-        <button onClick={() => fileRef.current?.click()}>Import</button>
+        <button onClick={importClick}>Import</button>
         <button onClick={() => dispatch({ type: 'load', scenario: seedDefault() })}>Reset</button>
         <input
           ref={fileRef}

@@ -1,7 +1,13 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Core capabilities for the Fortuna main window. The app is front-end only, so no filesystem, shell, or network permissions are granted.",
+  "description": "Capabilities for the Fortuna main window. Front-end only app; the only native surface is save/open dialogs plus reads/writes of the exact files the user picks in them (the dialog plugin extends the fs scope to chosen paths at runtime).",
   "windows": ["main"],
-  "permissions": ["core:default"]
+  "permissions": [
+    "core:default",
+    "dialog:allow-save",
+    "dialog:allow-open",
+    "fs:allow-write-text-file",
+    "fs:allow-read-text-file"
+  ]
 }
