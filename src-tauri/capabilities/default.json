@@ -8,6 +8,10 @@
     "dialog:allow-save",
     "dialog:allow-open",
     "fs:allow-write-text-file",
-    "fs:allow-read-text-file"
+    "fs:allow-read-text-file",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [{ "url": "https://github.com/bpmcginley/Fortuna*" }, { "url": "https://bpmcginley.github.io/*" }]
+    }
   ]
 }

@@ -479,3 +479,18 @@ input[type='range']::-moz-range-thumb {
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--faint); }
+
+/* ---------------- About modal ---------------- */
+.about-modal a { color: var(--accent); text-decoration: none; }
+.about-modal a:hover { text-decoration: underline; }
+.about-facts { display: flex; flex-direction: column; gap: 10px; font-size: 13px; line-height: 1.55; margin: 14px 0; }
+.about-facts b { color: var(--text); }
+.about-facts div { color: var(--muted); }
+
+/* ---------------- Crash screen ---------------- */
+.crash { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.crash-card { max-width: 560px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 26px 28px; }
+.crash-card h2 { margin: 0 0 10px; font-size: 19px; }
+.crash-card p { color: var(--muted); font-size: 13.5px; line-height: 1.6; }
+.crash-msg { background: var(--bg); border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: var(--bad); overflow-x: auto; }
+.crash-actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 14px; }

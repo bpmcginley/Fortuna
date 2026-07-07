@@ -7,6 +7,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: './',
   plugins: [react()],
+  define: {
+    // npm injects npm_package_version for any `npm run …` script.
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '0.0.0'),
+  },
   clearScreen: false,
   server: {
     port: 5173,

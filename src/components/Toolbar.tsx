@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { useStore } from '../state/store'
 import { PRESETS, seedDefault } from '../state/scenario'
 import type { Scenario } from '../engine/types'
+import { AboutButton } from './About'
 
 export function Toolbar() {
   const { scenario, dispatch, saveCurrent, saved } = useStore()
@@ -101,6 +102,7 @@ export function Toolbar() {
         <button onClick={exportJson}>Export</button>
         <button onClick={importClick}>Import</button>
         <button onClick={() => dispatch({ type: 'load', scenario: seedDefault() })}>Reset</button>
+        <AboutButton />
         <input
           ref={fileRef}
           type="file"

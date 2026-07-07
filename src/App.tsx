@@ -44,7 +44,7 @@ export default function App() {
           </main>
         </div>
         <footer className="app-foot">
-          Fortuna runs entirely in your browser — nothing you enter leaves this page. It is an educational
+          Fortuna runs entirely on your device — nothing you enter ever leaves it. It is an educational
           model, not financial advice. Simulated results assume the return distribution you set and cannot
           predict real markets.
         </footer>

@@ -54,6 +54,13 @@ const Ctx = createContext<StoreValue | null>(null)
 
 const deepCopy = <T,>(x: T): T => JSON.parse(JSON.stringify(x))
 
+// True when this launch found NO usable stored data (genuinely new user, or
+// storage was corrupt) — the app opens the quick-setup wizard once.
+let freshInstall = false
+export function wasFreshInstall(): boolean {
+  return freshInstall
+}
+
 function initialState(): PState {
   try {
     const raw = localStorage.getItem(LS_V2)
@@ -67,14 +74,19 @@ function initialState(): PState {
   // Migrate v1 single-scenario data if present.
   let scenario = seedDefault()
   let saved: SavedScenario[] = []
+  let migrated = false
   try {
     const c = localStorage.getItem(LS_V1_CURRENT)
-    if (c) scenario = JSON.parse(c) as Scenario
+    if (c) {
+      scenario = JSON.parse(c) as Scenario
+      migrated = true
+    }
     const sv = localStorage.getItem(LS_V1_SAVED)
     if (sv) saved = JSON.parse(sv) as SavedScenario[]
   } catch {
     /* ignore */
   }
+  freshInstall = !migrated
   const p = newProfile('Me', scenario, 0)
   p.saved = saved
   return { activeId: p.id, profiles: [p] }

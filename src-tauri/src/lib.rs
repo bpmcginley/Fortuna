@@ -8,6 +8,8 @@ pub fn run() {
         // (WebView2 does not honor <a download> blob links inside the shell).
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        // Open the GitHub/release links in the user's default browser.
+        .plugin(tauri_plugin_opener::init())
         .run(tauri::generate_context!())
         .expect("error while running Fortuna");
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useStore } from '../state/store'
+import { useStore, wasFreshInstall } from '../state/store'
 import {
   buildScenarioFromWizard,
   RISK_BLURBS,
@@ -14,7 +14,11 @@ import { NumberField, SelectField, TextField } from './ui'
 // rename / duplicate / delete; "+ New profile" opens the quick-setup wizard.
 export function ProfileBar() {
   const { profiles, activeId, switchProfile, renameProfile, duplicateProfile, deleteProfile } = useStore()
-  const [wizardOpen, setWizardOpen] = useState(false)
+  // On a genuinely fresh install the wizard opens by itself, in "set up your
+  // first profile" mode — newcomers answer a few questions instead of meeting
+  // forty sliders.
+  const [firstRun, setFirstRun] = useState(wasFreshInstall)
+  const [wizardOpen, setWizardOpen] = useState(firstRun)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
 
@@ -66,7 +70,15 @@ export function ProfileBar() {
         ),
       )}
       <button className="pchip-new" onClick={() => setWizardOpen(true)}>+ New profile</button>
-      {wizardOpen && <Wizard onClose={() => setWizardOpen(false)} />}
+      {wizardOpen && (
+        <Wizard
+          firstRun={firstRun}
+          onClose={() => {
+            setWizardOpen(false)
+            setFirstRun(false)
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -83,22 +95,33 @@ const OUTLOOK_OPTS: { value: CareerOutlook; label: string }[] = [
 ]
 
 // Quick-setup wizard: life details → a fully-populated scenario. Everything it
-// creates stays editable in the normal panels afterwards.
-function Wizard({ onClose }: { onClose: () => void }) {
-  const { createProfile } = useStore()
+// creates stays editable in the normal panels afterwards. In firstRun mode
+// (fresh install) it fills in the default profile rather than adding a second.
+function Wizard({ onClose, firstRun = false }: { onClose: () => void; firstRun?: boolean }) {
+  const { createProfile, dispatch, renameProfile, activeId } = useStore()
   const [a, setA] = useState<WizardAnswers>({ ...WIZARD_DEFAULTS })
   const set = (patch: Partial<WizardAnswers>) => setA((prev) => ({ ...prev, ...patch }))
 
   const create = () => {
-    createProfile(a.name || 'New profile', buildScenarioFromWizard(a))
+    const scenario = buildScenarioFromWizard(a)
+    if (firstRun) {
+      dispatch({ type: 'load', scenario })
+      renameProfile(activeId, a.name || 'Me')
+    } else {
+      createProfile(a.name || 'New profile', scenario)
+    }
     onClose()
   }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>New profile — quick setup</h3>
-        <p className="hint">A few questions about your life build a complete starting plan. Every number stays fully editable afterwards.</p>
+        <h3>{firstRun ? 'Welcome to Fortuna' : 'New profile — quick setup'}</h3>
+        <p className="hint">
+          {firstRun
+            ? 'Answer a few plain-language questions and Fortuna builds your starting plan, then simulates thousands of possible futures for it. Everything stays fully editable — and nothing you enter ever leaves this device.'
+            : 'A few questions about your life build a complete starting plan. Every number stays fully editable afterwards.'}
+        </p>
 
         <div className="wizard-grid">
           <TextField label="Who is this profile for?" value={a.name} onChange={(name) => set({ name })} />
@@ -125,8 +148,8 @@ function Wizard({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="modal-actions">
-          <button onClick={onClose}>Cancel</button>
-          <button className="primary" onClick={create}>Create profile</button>
+          <button onClick={onClose}>{firstRun ? 'Skip — explore a sample plan' : 'Cancel'}</button>
+          <button className="primary" onClick={create}>{firstRun ? 'Build my plan' : 'Create profile'}</button>
         </div>
       </div>
     </div>
