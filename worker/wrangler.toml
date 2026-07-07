@@ -1,0 +1,6 @@
+name = "fortuna-parse"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+
+# Secrets (set once, never committed):
+#   npx wrangler secret put ANTHROPIC_API_KEY

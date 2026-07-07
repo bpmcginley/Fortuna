@@ -8,6 +8,9 @@ import {
   type RiskLevel,
   type WizardAnswers,
 } from '../state/profiles'
+import { applyToWizard, MAX_DESCRIPTION_CHARS, textToPlan } from '../ai/client'
+import type { ParsedEvent } from '../ai/schema'
+import { uid } from '../state/scenario'
 import { NumberField, SelectField, TextField } from './ui'
 
 // Profile switcher: one chip per "life" being planned. The active chip exposes
@@ -102,8 +105,36 @@ function Wizard({ onClose, firstRun = false }: { onClose: () => void; firstRun?:
   const [a, setA] = useState<WizardAnswers>({ ...WIZARD_DEFAULTS })
   const set = (patch: Partial<WizardAnswers>) => setA((prev) => ({ ...prev, ...patch }))
 
+  // "Describe your situation" AI import
+  const [desc, setDesc] = useState('')
+  const [parsing, setParsing] = useState(false)
+  const [assumptions, setAssumptions] = useState<string[]>([])
+  const [parseSource, setParseSource] = useState<'ai' | 'offline' | null>(null)
+  const [parsedEvents, setParsedEvents] = useState<ParsedEvent[]>([])
+
+  const runParse = async () => {
+    if (!desc.trim() || parsing) return
+    setParsing(true)
+    try {
+      const { parsed, source } = await textToPlan(desc)
+      const { answers, events } = applyToWizard(parsed, a)
+      setA(answers)
+      setParsedEvents(events)
+      setAssumptions(parsed.assumptions)
+      setParseSource(source)
+    } finally {
+      setParsing(false)
+    }
+  }
+
   const create = () => {
     const scenario = buildScenarioFromWizard(a)
+    // One-off events the parser picked up (a wedding, an inheritance, ...)
+    for (const ev of parsedEvents) {
+      if (ev.age > a.age && ev.age < scenario.endAge) {
+        scenario.events.push({ id: uid(), name: ev.name, age: ev.age, amount: ev.amount })
+      }
+    }
     if (firstRun) {
       dispatch({ type: 'load', scenario })
       renameProfile(activeId, a.name || 'Me')
@@ -119,9 +150,51 @@ function Wizard({ onClose, firstRun = false }: { onClose: () => void; firstRun?:
         <h3>{firstRun ? 'Welcome to Fortuna' : 'New profile — quick setup'}</h3>
         <p className="hint">
           {firstRun
-            ? 'Answer a few plain-language questions and Fortuna builds your starting plan, then simulates thousands of possible futures for it. Everything stays fully editable — and nothing you enter ever leaves this device.'
+            ? 'Answer a few plain-language questions and Fortuna builds your starting plan, then simulates thousands of possible futures for it. Everything stays fully editable.'
             : 'A few questions about your life build a complete starting plan. Every number stays fully editable afterwards.'}
         </p>
+
+        <div className="ai-import">
+          <label className="field-label" htmlFor="ai-desc">
+            Or just describe your situation and let Fortuna fill this in
+          </label>
+          <textarea
+            id="ai-desc"
+            rows={3}
+            maxLength={MAX_DESCRIPTION_CHARS}
+            placeholder={'e.g. "I\'m 27, a nurse making $82k, have $20k in my 401k and $8k saved, rent is $1,500/month, want to buy a house in ~5 years and retire by 60."'}
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+          />
+          <div className="ai-import-row">
+            <button className="primary" type="button" disabled={parsing || !desc.trim()} onClick={runParse}>
+              {parsing ? 'Reading…' : '✨ Fill in from my description'}
+            </button>
+            {parseSource && (
+              <span className={`ai-badge ${parseSource}`}>
+                {parseSource === 'ai' ? 'parsed by AI' : 'parsed on-device'}
+              </span>
+            )}
+          </div>
+          {assumptions.length > 0 && (
+            <ul className="ai-assumptions">
+              {assumptions.map((s, i) => (
+                <li key={i}>{s}</li>
+              ))}
+            </ul>
+          )}
+          {parsedEvents.length > 0 && (
+            <p className="hint">
+              Also picked up {parsedEvents.length} life event{parsedEvents.length > 1 ? 's' : ''}:{' '}
+              {parsedEvents.map((e) => `${e.name} (age ${e.age}, ${e.amount < 0 ? '-' : '+'}$${Math.abs(e.amount).toLocaleString()})`).join(', ')} — added to the plan on create.
+            </p>
+          )}
+          <p className="hint ai-privacy">
+            This one feature sends only the text above to Fortuna's parser service (free, no account). If it's
+            unreachable, a fully on-device parser is used instead. Everything else never leaves your device —
+            review the fields below before creating.
+          </p>
+        </div>
 
         <div className="wizard-grid">
           <TextField label="Who is this profile for?" value={a.name} onChange={(name) => set({ name })} />

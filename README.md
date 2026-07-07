@@ -26,6 +26,10 @@ place), but the demo is the fastest way to see what it does.
 
 ## What it does
 
+- **Describe your life in plain English** — type *"I'm 27, a nurse making $82k, $20k in my
+  401k, rent is $1,500/month, want to buy a house and retire by 60"* and Fortuna fills in your
+  starting plan (free AI parse via Claude, with a fully on-device parser as automatic fallback).
+  Every interpretation it makes is listed for you to review before anything is created.
 - **Profiles** — plan multiple lives side by side. A quick-setup wizard (auto-opens on first
   launch) asks plain-language questions — age, career outlook, spending, investing style,
   home/kids plans — and builds a complete, editable plan.
@@ -79,7 +83,12 @@ src-tauri/    Tauri (Rust) desktop shell: window, security policy, installer
 
 ## Privacy & security
 
-- All computation is local; the app makes **no network requests**.
+- All simulation runs locally; your plan data never leaves your device.
+- **One optional exception, clearly labeled in-app:** the "describe your situation" box in the
+  wizard sends *only the text you type there* to Fortuna's parser service
+  ([`worker/`](worker/), a ~150-line Cloudflare Worker you can read) which forwards it to the
+  Claude API and returns structured fields. No account, no identifiers, nothing stored. If the
+  service is unreachable — or you disable it — an on-device parser is used instead.
 - The desktop shell's only OS permissions are: file save/open dialogs (for the files *you*
   pick), and opening this repo's GitHub links in your browser. The full policy is
   ~40 lines: [`src-tauri/capabilities/default.json`](src-tauri/capabilities/default.json).

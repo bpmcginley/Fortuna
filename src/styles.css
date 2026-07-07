@@ -494,3 +494,15 @@ input[type='range']::-moz-range-thumb {
 .crash-card p { color: var(--muted); font-size: 13.5px; line-height: 1.6; }
 .crash-msg { background: var(--bg); border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: var(--bad); overflow-x: auto; }
 .crash-actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 14px; }
+
+/* ---------------- AI import (wizard) ---------------- */
+.ai-import { background: var(--panel-2); border: 1px solid var(--border-soft); border-radius: 8px; padding: 12px; margin: 12px 0 4px; display: flex; flex-direction: column; gap: 8px; }
+.ai-import textarea { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 8px; font-size: 13px; font-family: var(--font); resize: vertical; }
+.ai-import textarea:focus { outline: none; border-color: var(--accent); }
+.ai-import-row { display: flex; align-items: center; gap: 10px; }
+.ai-badge { font-size: 11px; padding: 2px 9px; border-radius: 10px; border: 1px solid var(--border); color: var(--muted); }
+.ai-badge.ai { color: var(--accent); border-color: var(--accent); }
+.ai-badge.offline { color: var(--warn); border-color: var(--warn); }
+.ai-assumptions { margin: 2px 0 0; padding-left: 18px; font-size: 12px; color: var(--muted); line-height: 1.55; }
+.ai-assumptions li { margin: 1px 0; }
+.ai-privacy { font-size: 10.5px; color: var(--faint); }
